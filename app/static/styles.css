@@ -79,10 +79,20 @@ body {
 }
 
 .home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   color: var(--ink);
   text-decoration: none;
   font-weight: 800;
   letter-spacing: 0.04em;
+}
+
+.app-mark {
+  display: block;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
 }
 
 .home-link:hover,

@@ -208,3 +208,6 @@ __marimo__/
 
 # Databases
 *.db
+
+# Mac files
+.DS_Store
