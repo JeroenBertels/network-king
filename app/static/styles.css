@@ -494,6 +494,14 @@ select:focus {
   gap: 14px;
 }
 
+.character-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
 .character-card {
   position: relative;
   overflow: hidden;
@@ -519,12 +527,16 @@ select:focus {
 }
 
 .character-step {
-  margin-bottom: 12px;
   font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--accent);
+}
+
+.button-compact {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.88rem;
 }
 
 .character-photo,

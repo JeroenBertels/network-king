@@ -13,11 +13,8 @@
 
   <section class="section-card">
     <div class="section-heading">
-      <div>
-        <p class="eyebrow">Character Flow</p>
-        <h2>Unlock path</h2>
-      </div>
-      {% if viewer_is_member and progress_state %}
+      <h2>Characters</h2>
+      {% if viewer_is_member and progress_state and current_user and current_user.role == "networker" %}
         <span class="pill">Next unlock: level {{ progress_state.unlocked_position }}</span>
       {% endif %}
     </div>
@@ -26,18 +23,19 @@
       {% for item in character_cards %}
         {% set character = item.character %}
         <article class="character-card{% if not item.show_identity %} character-card--locked{% endif %}{% if item.completed %} character-card--complete{% endif %}">
-          <div class="character-step">Level {{ character.position }}</div>
+          <div class="character-card__top">
+            <div class="character-step">Level {{ character.position }}</div>
+            {% if item.show_identity %}
+              <a class="button button-secondary button-compact" href="/events/{{ event.slug }}/characters/{{ character.id }}">Open character</a>
+            {% endif %}
+          </div>
           {% if item.show_identity %}
             {% if character.image_key %}
               <img class="character-photo" src="/media/{{ character.image_key }}" alt="{{ character.fictional_name }}">
             {% endif %}
             <h3>{{ character.fictional_name }}</h3>
-            <p class="muted">{{ "Completed" if item.completed else "Unlocked" }}</p>
-            <a class="button button-secondary" href="/events/{{ event.slug }}/characters/{{ character.id }}">Open character</a>
           {% else %}
             <h3>Locked character</h3>
-            <p class="muted">Keep the chain moving to reveal this guest.</p>
-            <span class="pill">Hidden</span>
           {% endif %}
         </article>
       {% else %}
