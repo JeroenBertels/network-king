@@ -591,6 +591,32 @@ select:focus {
   gap: 12px;
 }
 
+.note-list {
+  display: grid;
+  gap: 12px;
+}
+
+.note-entry {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(23, 49, 58, 0.08);
+}
+
+.note-entry__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.note-entry p {
+  margin: 0;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
 .leaderboard-row {
   padding: 14px 16px;
   border-radius: 18px;

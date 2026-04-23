@@ -62,6 +62,7 @@ class Event(TimestampMixin, Base):
         "CharacterNote",
         back_populates="event",
         cascade="all, delete-orphan",
+        order_by="CharacterNote.updated_at",
     )
 
 

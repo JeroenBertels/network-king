@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 
 from app.auth import hash_password
 from app.main import create_app
-from app.models import Character, Event, EventMembership, User
+from app.models import Character, CharacterNote, Event, EventMembership, User
 from app.settings import Settings
 
 
@@ -97,6 +97,23 @@ def create_character(
         session.commit()
         session.refresh(character)
         return character
+    finally:
+        session.close()
+
+
+def create_note(app, user_id: int, event_id: int, character_id: int, note_text: str) -> CharacterNote:
+    session = app.state.session_factory()
+    try:
+        note = CharacterNote(
+            user_id=user_id,
+            event_id=event_id,
+            character_id=character_id,
+            note_text=note_text,
+        )
+        session.add(note)
+        session.commit()
+        session.refresh(note)
+        return note
     finally:
         session.close()
 

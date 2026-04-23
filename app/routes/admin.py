@@ -54,6 +54,7 @@ def _load_event(session, event_id: int):
         .options(
             selectinload(Event.characters),
             selectinload(Event.memberships).selectinload(EventMembership.user),
+            selectinload(Event.notes),
         )
     )
     return session.scalar(statement)
@@ -640,20 +641,33 @@ async def export_characters(request: Request, event_id: int):
         event = _load_event(session, event_id)
         if event is None:
             raise HTTPException(status_code=404, detail="Event not found.")
+        networkers = sorted(
+            [membership.user for membership in event.memberships if membership.user.role == "networker"],
+            key=lambda user: user.login.lower(),
+        )
+        note_by_character_and_user = {
+            (note.character_id, note.user_id): note.note_text
+            for note in event.notes
+            if note.note_text.strip()
+        }
+        fieldnames = ["event_name", "position", "real_name", "fictional_name", "storyline_truth"] + [
+            f"note__{networker.login}" for networker in networkers
+        ]
         rows = []
         for character in sorted(event.characters, key=lambda item: item.position):
-            rows.append(
-                {
-                    "event_name": event.name,
-                    "position": str(character.position),
-                    "real_name": character.real_name,
-                    "fictional_name": character.fictional_name,
-                    "storyline_truth": character.storyline_truth,
-                }
-            )
+            row = {
+                "event_name": event.name,
+                "position": str(character.position),
+                "real_name": character.real_name,
+                "fictional_name": character.fictional_name,
+                "storyline_truth": character.storyline_truth,
+            }
+            for networker in networkers:
+                row[f"note__{networker.login}"] = note_by_character_and_user.get((character.id, networker.id), "")
+            rows.append(row)
     finally:
         session.close()
-    content = dump_csv(rows, ["event_name", "position", "real_name", "fictional_name", "storyline_truth"])
+    content = dump_csv(rows, fieldnames)
     headers = {"Content-Disposition": f'attachment; filename="{event.slug}-characters.csv"'}
     return Response(content=content, media_type="text/csv", headers=headers)
 

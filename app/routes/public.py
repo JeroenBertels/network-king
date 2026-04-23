@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from app.auth import is_admin
 from app.gameplay import build_progress_state, can_access_character, leaderboard_for_event, user_in_event
-from app.models import Character, CharacterNote, Event, EventMembership
+from app.models import Character, CharacterNote, Event, EventMembership, User
 from app.utils import add_flash, extract_qr_token
 from app.web import current_user_from_request, template_context
 
@@ -194,12 +194,32 @@ async def character_page(request: Request, slug: str, character_id: int):
             raise HTTPException(status_code=404, detail="Character not found.")
         progress_state = None
         note = None
+        admin_notes = []
         can_view = is_admin(current_user)
         if current_user and user_in_event(current_user, event):
             user_notes = [note for note in event.notes if note.user_id == current_user.id and note.note_text.strip()]
             progress_state = build_progress_state(list(event.characters), user_notes)
             note = progress_state.note_by_character_id.get(character.id)
             can_view = can_view or can_access_character(current_user, character, progress_state)
+        if is_admin(current_user):
+            user_lookup = {membership.user_id: membership.user for membership in event.memberships}
+            admin_notes = []
+            for note_item in event.notes:
+                if note_item.character_id != character.id or not note_item.note_text.strip():
+                    continue
+                user = user_lookup.get(note_item.user_id)
+                if user is None:
+                    user = session.get(User, note_item.user_id)
+                if user is None or user.role != "networker":
+                    continue
+                admin_notes.append(
+                    {
+                        "user": user,
+                        "note_text": note_item.note_text,
+                        "updated_at": note_item.updated_at,
+                    }
+                )
+            admin_notes.sort(key=lambda item: (item["user"].display_name.lower(), item["user"].login.lower()))
     finally:
         session.close()
 
@@ -214,6 +234,7 @@ async def character_page(request: Request, slug: str, character_id: int):
             character=character,
             progress_state=progress_state,
             note=note,
+            admin_notes=admin_notes,
             can_view=can_view,
             viewer_is_member=user_in_event(current_user, event),
         ),

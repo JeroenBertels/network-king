@@ -34,7 +34,7 @@
             </div>
           </dl>
           <div class="truth-box">
-            <h3>Admin-only storyline truth</h3>
+            <h3>Storyline truth</h3>
             <p>{{ character.storyline_truth or "No hidden storyline notes yet." }}</p>
           </div>
         {% endif %}
@@ -44,7 +44,7 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">Notes</p>
-            <h2>Your takeaways</h2>
+            <h2>{{ "Networker notes" if is_admin else "Your takeaways" }}</h2>
           </div>
         </div>
         {% if current_user and current_user.role == "networker" and viewer_is_member %}
@@ -56,7 +56,19 @@
             <button class="button" type="submit">Save note</button>
           </form>
         {% elif is_admin %}
-          <p class="muted">Admins can inspect the character but do not save gameplay notes.</p>
+          <div class="note-list">
+            {% for item in admin_notes %}
+              <article class="note-entry">
+                <div class="note-entry__header">
+                  <strong>{{ item.user.display_name }}</strong>
+                  <span class="muted">{{ item.updated_at | datetime_label }}</span>
+                </div>
+                <p>{{ item.note_text }}</p>
+              </article>
+            {% else %}
+              <p class="muted">No networker notes yet.</p>
+            {% endfor %}
+          </div>
         {% else %}
           <p class="muted">Log in with a networker account linked to this event to save notes and unlock progress.</p>
         {% endif %}
