@@ -5,7 +5,7 @@
     <div class="hero-copy">
       <p class="eyebrow">QR Scanner</p>
       <h1>Scan a badge for {{ event.name }}</h1>
-      <p class="lede">Use the camera when your browser supports it, or paste a QR URL or token by hand. The app will route you to the character page if the badge belongs to this event.</p>
+      <p class="lede">Use the camera when your browser supports it, or paste a scanned code by hand. The app will route you to the character page if the badge belongs to this event.</p>
     </div>
   </section>
 
@@ -25,8 +25,8 @@
     </label>
     <form method="post" action="/events/{{ event.slug }}/scan" class="stack" data-scan-form>
       <label class="field">
-        <span>Manual QR value</span>
-        <input type="text" name="qr_value" placeholder="https://network-king.bertels.ai/q/..." data-scan-input required>
+        <span>Manual scan value</span>
+        <input type="text" name="qr_value" placeholder="Paste the scanned value here" data-scan-input required>
       </label>
       <button class="button" type="submit">Open character</button>
     </form>
@@ -36,4 +36,3 @@
 {% block scripts %}
   <script src="{{ request.url_for('static', path='scanner.js') }}"></script>
 {% endblock %}
-

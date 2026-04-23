@@ -154,7 +154,6 @@
           </label>
           <button class="button button-ghost" type="submit">Upload image</button>
         </form>
-        <p class="muted">QR URL: {{ request.app.state.settings.app_base_url }}/q/{{ character.qr_token }}</p>
       </article>
     {% else %}
       <article class="section-card empty-state">
@@ -164,4 +163,3 @@
     {% endfor %}
   </section>
 {% endblock %}
-

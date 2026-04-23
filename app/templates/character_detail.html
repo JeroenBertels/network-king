@@ -37,10 +37,6 @@
               <dt>Real name</dt>
               <dd>{{ character.real_name }}</dd>
             </div>
-            <div>
-              <dt>QR URL</dt>
-              <dd>{{ request.app.state.settings.app_base_url }}/q/{{ character.qr_token }}</dd>
-            </div>
           </dl>
           <div class="truth-box">
             <h3>Admin-only storyline truth</h3>
@@ -77,4 +73,3 @@
     </section>
   {% endif %}
 {% endblock %}
-

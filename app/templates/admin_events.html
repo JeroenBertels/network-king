@@ -100,16 +100,15 @@
       </div>
     </div>
     <div class="table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Slug</th>
-            <th>Characters</th>
-            <th>Networkers</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Characters</th>
+              <th>Networkers</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
         <tbody>
           {% for event in events %}
             <tr>
@@ -119,14 +118,13 @@
                   <button class="button button-secondary" type="submit">Save</button>
                 </form>
               </td>
-              <td>{{ event.slug }}</td>
               <td>{{ event.characters|length }}</td>
               <td>{{ event.memberships|length }}</td>
               <td><a class="button button-ghost" href="/admin/events/{{ event.id }}/characters">Manage characters</a></td>
             </tr>
           {% else %}
             <tr>
-              <td colspan="5">No events created yet.</td>
+              <td colspan="4">No events created yet.</td>
             </tr>
           {% endfor %}
         </tbody>
@@ -134,4 +132,3 @@
     </div>
   </section>
 {% endblock %}
-
