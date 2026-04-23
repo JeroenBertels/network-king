@@ -4,7 +4,7 @@
     return;
   }
 
-  const video = root.querySelector(".scanner-video");
+  const reader = root.querySelector("[data-scan-reader]");
   const status = root.querySelector("[data-scanner-status]");
   const startButton = root.querySelector("[data-scan-start]");
   const stopButton = root.querySelector("[data-scan-stop]");
@@ -12,95 +12,179 @@
   const form = root.querySelector("[data-scan-form]");
   const input = root.querySelector("[data-scan-input]");
 
-  let stream = null;
-  let detector = null;
-  let active = false;
-  let frameRequest = null;
+  let scanner = null;
+  let scanning = false;
+  let busy = false;
 
   function setStatus(message) {
     status.textContent = message;
   }
 
-  function stopScanner() {
-    active = false;
-    if (frameRequest) {
-      cancelAnimationFrame(frameRequest);
-      frameRequest = null;
-    }
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      stream = null;
-    }
-    video.srcObject = null;
-    setStatus("Camera stopped. You can still paste a QR value or decode an image.");
+  function scannerAvailable() {
+    return typeof window.Html5Qrcode === "function";
   }
 
-  async function detectFrame() {
-    if (!active || !detector) {
+  function supportedFormats() {
+    const qrFormat = window.Html5QrcodeSupportedFormats?.QR_CODE;
+    return qrFormat ? [qrFormat] : undefined;
+  }
+
+  function createScanner() {
+    if (!scanner) {
+      scanner = new window.Html5Qrcode(
+        reader.id,
+        supportedFormats() ? { formatsToSupport: supportedFormats() } : undefined,
+      );
+    }
+    return scanner;
+  }
+
+  async function resetScanner() {
+    if (!scanner) {
+      reader.innerHTML = "";
       return;
     }
-    try {
-      const codes = await detector.detect(video);
-      if (codes.length > 0 && codes[0].rawValue) {
-        input.value = codes[0].rawValue;
-        form.submit();
-        return;
+
+    if (scanning) {
+      try {
+        await scanner.stop();
+      } catch (error) {
+        // Ignore stop failures and continue cleanup.
       }
-    } catch (error) {
-      setStatus("The browser could not read that frame. Trying again...");
     }
-    frameRequest = requestAnimationFrame(detectFrame);
+
+    try {
+      await scanner.clear();
+    } catch (error) {
+      // Ignore clear failures and continue resetting state.
+    }
+
+    scanner = null;
+    scanning = false;
+    reader.innerHTML = "";
+  }
+
+  function chooseCamera(cameras) {
+    if (!Array.isArray(cameras) || cameras.length === 0) {
+      return null;
+    }
+
+    const backCamera = cameras.find((camera) => /back|rear|environment|wide/i.test(camera.label || ""));
+    return backCamera || cameras[cameras.length - 1];
+  }
+
+  function buildScanConfig() {
+    const size = Math.max(180, Math.min(reader.clientWidth || 280, 260));
+    return {
+      fps: 10,
+      qrbox: { width: size, height: size },
+      aspectRatio: 4 / 3,
+      disableFlip: true,
+    };
+  }
+
+  async function startWithConfig(cameraConfig) {
+    const instance = createScanner();
+    await instance.start(
+      cameraConfig,
+      buildScanConfig(),
+      (decodedText) => {
+        input.value = decodedText;
+        setStatus("QR code found. Opening character...");
+        void resetScanner();
+        form.submit();
+      },
+      () => {
+        // Scanning failures are expected while no QR code is in frame.
+      },
+    );
+    scanning = true;
   }
 
   async function startScanner() {
-    if (!("BarcodeDetector" in window)) {
-      setStatus("Live camera scanning is not available in this browser. Paste the QR value or upload an image instead.");
+    if (busy) {
       return;
     }
+    if (!scannerAvailable()) {
+      setStatus("Live camera scanning could not load in this browser. Paste the QR value or upload an image instead.");
+      return;
+    }
+
+    busy = true;
     try {
-      detector = new window.BarcodeDetector({ formats: ["qr_code"] });
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" } },
-        audio: false,
-      });
-      video.srcObject = stream;
-      await video.play();
-      active = true;
+      await resetScanner();
+      setStatus("Requesting camera access...");
+
+      try {
+        await startWithConfig({ facingMode: { ideal: "environment" } });
+      } catch (facingModeError) {
+        await resetScanner();
+        const cameras = await window.Html5Qrcode.getCameras();
+        const camera = chooseCamera(cameras);
+        if (!camera) {
+          throw facingModeError;
+        }
+        await startWithConfig({ deviceId: { exact: camera.id } });
+      }
+
       setStatus("Point the camera at a QR badge.");
-      detectFrame();
     } catch (error) {
       setStatus("The camera could not be started. Check permissions or use the manual fallback.");
+    } finally {
+      busy = false;
+    }
+  }
+
+  async function stopScanner() {
+    if (busy) {
+      return;
+    }
+    busy = true;
+    try {
+      await resetScanner();
+      setStatus("Camera stopped. You can still paste a QR value or decode an image.");
+    } finally {
+      busy = false;
     }
   }
 
   async function decodeImage(file) {
-    if (!file) {
+    if (!file || busy) {
       return;
     }
-    if (!("BarcodeDetector" in window)) {
-      setStatus("Image decoding is not supported in this browser. Paste the QR value instead.");
+    if (!scannerAvailable()) {
+      setStatus("Image decoding could not load in this browser. Paste the QR value instead.");
       return;
     }
+
+    busy = true;
     try {
-      detector = detector || new window.BarcodeDetector({ formats: ["qr_code"] });
-      const bitmap = await createImageBitmap(file);
-      const codes = await detector.detect(bitmap);
-      if (!codes.length || !codes[0].rawValue) {
-        setStatus("No QR code was found in that image.");
-        return;
-      }
-      input.value = codes[0].rawValue;
+      await resetScanner();
+      const instance = createScanner();
+      setStatus("Reading the selected image...");
+      const decodedText = await instance.scanFile(file, false);
+      input.value = decodedText;
+      setStatus("QR code found. Opening character...");
       form.submit();
     } catch (error) {
-      setStatus("That image could not be decoded. Try another photo or paste the QR value.");
+      setStatus("No QR code was found in that image. Try another photo or paste the QR value.");
+    } finally {
+      await resetScanner();
+      busy = false;
     }
   }
 
-  startButton?.addEventListener("click", startScanner);
-  stopButton?.addEventListener("click", stopScanner);
+  startButton?.addEventListener("click", () => {
+    void startScanner();
+  });
+  stopButton?.addEventListener("click", () => {
+    void stopScanner();
+  });
   imageInput?.addEventListener("change", (event) => {
     const [file] = event.target.files || [];
-    decodeImage(file);
+    void decodeImage(file);
   });
-  window.addEventListener("beforeunload", stopScanner);
+  window.addEventListener("beforeunload", () => {
+    void resetScanner();
+  });
 })();
