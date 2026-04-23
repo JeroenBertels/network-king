@@ -11,9 +11,11 @@
     <div class="backdrop"></div>
     <div class="shell">
       <header class="topbar">
-        <a class="brand-link" href="https://bertels.ai" target="_blank" rel="noreferrer">bertels.ai</a>
+        <div class="topbar-brand">
+          <a class="brand-link" href="https://bertels.ai" target="_blank" rel="noreferrer">bertels.ai</a>
+          <a class="home-link" href="/">Network King</a>
+        </div>
         <div class="top-actions">
-          <a class="button button-ghost" href="/">Events</a>
           {% if current_user %}
             <span class="pill">Logged in as {{ current_user.role }}</span>
             <a class="button button-secondary" href="/logout">Log out</a>
@@ -37,4 +39,3 @@
     {% block scripts %}{% endblock %}
   </body>
 </html>
-
