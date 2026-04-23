@@ -37,6 +37,47 @@ uvicorn app.main:app --reload
 python -m app.seed_admin
 ```
 
+## Docker
+
+Build the image:
+
+```bash
+docker build -t network-king .
+```
+
+Run it locally on port `8080`:
+
+```bash
+docker run \
+  -p 8080:8080 \
+  -e SECRET_KEY=change-me \
+  -e APP_BASE_URL=http://localhost:8080 \
+  -e SEED_ADMIN_LOGIN=admin \
+  -e SEED_ADMIN_PASSWORD=change-me \
+  network-king
+```
+
+The container defaults to:
+
+- `PORT=8080`
+- `DATABASE_URL=sqlite:////app/var/network_king.db`
+- `LOCAL_MEDIA_ROOT=/app/var/uploads`
+
+To persist the local SQLite database and uploaded images between runs, mount the app's `var` directory:
+
+```bash
+docker run \
+  -p 8080:8080 \
+  -e SECRET_KEY=change-me \
+  -e APP_BASE_URL=http://localhost:8080 \
+  -e SEED_ADMIN_LOGIN=admin \
+  -e SEED_ADMIN_PASSWORD=change-me \
+  -v "$(pwd)/var:/app/var" \
+  network-king
+```
+
+For production, point `DATABASE_URL` at PostgreSQL and configure the rest of the environment variables as needed.
+
 ## Environment Variables
 
 - `SECRET_KEY`: session signing key
@@ -66,4 +107,3 @@ PYTHONPATH=. pytest -q
 - `/admin/events`
 - `/admin/networkers`
 - `/admin/events/{event_id}/characters`
-

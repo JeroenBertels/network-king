@@ -1,0 +1,13 @@
+.git
+.github
+.venv
+.pytest_cache
+__pycache__
+*.pyc
+.DS_Store
+.env
+network_king.db
+network_king.db-shm
+network_king.db-wal
+var
+tests
