@@ -4,7 +4,7 @@
   <section class="section-card scanner-shell" data-scanner>
     <h1 class="card-title">Scan a badge for {{ event.name }}</h1>
     <div class="scanner-stage">
-      <video class="scanner-video" playsinline muted></video>
+      <div class="scanner-reader" id="scanner-reader" data-scan-reader></div>
       <div class="scanner-frame"></div>
     </div>
     <p class="scanner-status" data-scanner-status>Tap “Start camera” to begin scanning.</p>
@@ -14,7 +14,7 @@
     </div>
     <label class="field">
       <span>Decode from image</span>
-      <input type="file" accept="image/*" data-scan-image>
+      <input type="file" accept="image/*" capture="environment" data-scan-image>
     </label>
     <form method="post" action="/events/{{ event.slug }}/scan" class="stack" data-scan-form>
       <label class="field">
@@ -27,5 +27,6 @@
 {% endblock %}
 
 {% block scripts %}
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" crossorigin="anonymous"></script>
   <script src="/static/scanner.js"></script>
 {% endblock %}

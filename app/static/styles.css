@@ -652,11 +652,22 @@ select:focus {
   min-height: 320px;
 }
 
-.scanner-video {
+.scanner-reader {
   width: 100%;
+  min-height: 320px;
+}
+
+.scanner-reader video,
+.scanner-reader canvas,
+.scanner-reader img {
+  width: 100% !important;
   min-height: 320px;
   object-fit: cover;
   display: block;
+}
+
+.scanner-reader > div {
+  border: 0 !important;
 }
 
 .scanner-frame {
@@ -668,6 +679,7 @@ select:focus {
   border: 3px solid rgba(255, 250, 240, 0.8);
   border-radius: 28px;
   box-shadow: 0 0 0 999px rgba(23, 49, 58, 0.28);
+  pointer-events: none;
 }
 
 .scanner-status {
