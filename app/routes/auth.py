@@ -37,12 +37,10 @@ async def login_submit(
         add_flash(request, "error", "That login and password combination was not recognized.")
         return RedirectResponse("/login", status_code=303)
     login_user(request, user)
-    add_flash(request, "success", f"Welcome back, {user.display_name}.")
     return RedirectResponse("/", status_code=303)
 
 
 @router.get("/logout")
 async def logout_page(request: Request):
     logout_user(request)
-    add_flash(request, "success", "You have been logged out.")
     return RedirectResponse("/", status_code=303)
