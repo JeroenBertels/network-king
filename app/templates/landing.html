@@ -20,19 +20,12 @@
       <article class="event-card">
         <div class="card-topline">
           <p class="eyebrow">Event</p>
-          <span class="pill">{{ event.characters|length }} characters</span>
+          <div class="card-metrics">
+            <span class="pill">{{ event.characters|length }} characters</span>
+            <span class="pill">{{ event.memberships|length }} networkers</span>
+          </div>
         </div>
         <h2>{{ event.name }}</h2>
-        <div class="stat-row">
-          <div>
-            <strong>{{ event.memberships|length }}</strong>
-            <span>networkers</span>
-          </div>
-          <div>
-            <strong>{{ leaderboard_map[event.id]|length }}</strong>
-            <span>leaders shown</span>
-          </div>
-        </div>
         {% if leaderboard_map[event.id] %}
           <ol class="mini-leaderboard">
             {% for entry in leaderboard_map[event.id] %}

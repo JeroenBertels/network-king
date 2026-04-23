@@ -274,6 +274,13 @@ body {
   gap: 12px;
 }
 
+.card-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .stat-row {
   justify-content: flex-start;
   gap: 28px;
