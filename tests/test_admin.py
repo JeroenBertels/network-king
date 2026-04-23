@@ -31,7 +31,7 @@ def test_event_import_validation_rejects_existing_and_duplicate_rows(app, client
 def test_badge_zip_download_contains_one_pdf_per_character(app, client):
     admin = create_user(app, "admin", "admin-pass", role="admin")
     event = create_event(app, "Badge Night", "badge-night")
-    create_character(app, event.id, 1, "Alpha Badge")
+    create_character(app, event.id, 1, "Alpha Badge", real_name="Alpha Real")
     create_character(app, event.id, 2, "Beta Badge")
     login(client, admin.login, "admin-pass")
 
@@ -42,6 +42,15 @@ def test_badge_zip_download_contains_one_pdf_per_character(app, client):
     archive = ZipFile(io.BytesIO(response.content))
     names = sorted(archive.namelist())
     assert names == ["01-alpha-badge.pdf", "02-beta-badge.pdf"]
+
+    first_badge = archive.read("01-alpha-badge.pdf")
+    assert b"Badge Night" in first_badge
+    assert b"Alpha Badge" in first_badge
+    assert b"Alpha Real" not in first_badge
+    assert b"Real name" not in first_badge
+    assert b"Level 1" not in first_badge
+    assert b"Special Guest Badge" not in first_badge
+    assert b"http://testserver/q/" not in first_badge
 
 
 def test_admin_character_page_shows_networker_notes(app, client):
