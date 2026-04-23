@@ -8,7 +8,6 @@
   const status = root.querySelector("[data-scanner-status]");
   const startButton = root.querySelector("[data-scan-start]");
   const stopButton = root.querySelector("[data-scan-stop]");
-  const imageInput = root.querySelector("[data-scan-image]");
   const form = root.querySelector("[data-scan-form]");
   const input = root.querySelector("[data-scan-input]");
 
@@ -21,7 +20,7 @@
   }
 
   function scannerAvailable() {
-    return typeof window.Html5Qrcode === "function";
+    return typeof window.Html5Qrcode === "function" && form && input;
   }
 
   function supportedFormats() {
@@ -106,7 +105,7 @@
       return;
     }
     if (!scannerAvailable()) {
-      setStatus("Live camera scanning could not load in this browser. Paste the QR value or upload an image instead.");
+      setStatus("Live camera scanning could not load in this browser.");
       return;
     }
 
@@ -129,7 +128,7 @@
 
       setStatus("Point the camera at a QR badge.");
     } catch (error) {
-      setStatus("The camera could not be started. Check permissions or use the manual fallback.");
+      setStatus("The camera could not be started. Check permissions and try again.");
     } finally {
       busy = false;
     }
@@ -142,34 +141,8 @@
     busy = true;
     try {
       await resetScanner();
-      setStatus("Camera stopped. You can still paste a QR value or decode an image.");
+      setStatus("Camera stopped.");
     } finally {
-      busy = false;
-    }
-  }
-
-  async function decodeImage(file) {
-    if (!file || busy) {
-      return;
-    }
-    if (!scannerAvailable()) {
-      setStatus("Image decoding could not load in this browser. Paste the QR value instead.");
-      return;
-    }
-
-    busy = true;
-    try {
-      await resetScanner();
-      const instance = createScanner();
-      setStatus("Reading the selected image...");
-      const decodedText = await instance.scanFile(file, false);
-      input.value = decodedText;
-      setStatus("QR code found. Opening character...");
-      form.submit();
-    } catch (error) {
-      setStatus("No QR code was found in that image. Try another photo or paste the QR value.");
-    } finally {
-      await resetScanner();
       busy = false;
     }
   }
@@ -179,10 +152,6 @@
   });
   stopButton?.addEventListener("click", () => {
     void stopScanner();
-  });
-  imageInput?.addEventListener("change", (event) => {
-    const [file] = event.target.files || [];
-    void decodeImage(file);
   });
   window.addEventListener("beforeunload", () => {
     void resetScanner();

@@ -2,26 +2,18 @@
 
 {% block content %}
   <section class="section-card scanner-shell" data-scanner>
-    <h1 class="card-title">Scan a badge for {{ event.name }}</h1>
+    <h1 class="card-title">Scan a badge</h1>
     <div class="scanner-stage">
       <div class="scanner-reader" id="scanner-reader" data-scan-reader></div>
       <div class="scanner-frame"></div>
     </div>
-    <p class="scanner-status" data-scanner-status>Tap “Start camera” to begin scanning.</p>
+    <p class="scanner-status" data-scanner-status>Tap “Start camera” to begin scanning. A successful scan opens the character automatically.</p>
     <div class="button-row">
       <button class="button" type="button" data-scan-start>Start camera</button>
       <button class="button button-secondary" type="button" data-scan-stop>Stop camera</button>
     </div>
-    <label class="field">
-      <span>Decode from image</span>
-      <input type="file" accept="image/*" capture="environment" data-scan-image>
-    </label>
-    <form method="post" action="/events/{{ event.slug }}/scan" class="stack" data-scan-form>
-      <label class="field">
-        <span>Manual scan value</span>
-        <input type="text" name="qr_value" placeholder="Paste the scanned value here" data-scan-input required>
-      </label>
-      <button class="button" type="submit">Open character</button>
+    <form method="post" action="/events/{{ event.slug }}/scan" data-scan-form hidden>
+      <input type="hidden" name="qr_value" data-scan-input>
     </form>
   </section>
 {% endblock %}

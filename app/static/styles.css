@@ -123,6 +123,11 @@ body {
   padding: 4px 4px 2px;
 }
 
+.page-header--stacked {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
 .page-header h1,
 .card-title {
   margin: 0;
@@ -238,31 +243,31 @@ body {
 }
 
 .button-secondary {
-  background: rgba(23, 49, 58, 0.08);
-  color: var(--ink);
-  border-color: rgba(23, 49, 58, 0.18);
+  background: var(--accent);
+  color: #fffaf0;
+  border-color: transparent;
 }
 
 .button-secondary:hover,
 .button-secondary:focus-visible {
-  background: rgba(23, 49, 58, 0.14);
-  color: var(--ink);
-  border-color: rgba(23, 49, 58, 0.26);
-  box-shadow: 0 10px 24px rgba(23, 49, 58, 0.1);
+  background: var(--accent-strong);
+  color: #fffaf0;
+  border-color: transparent;
+  box-shadow: 0 10px 24px rgba(180, 83, 9, 0.18);
 }
 
 .button-ghost {
-  background: transparent;
-  color: var(--ink);
-  border-color: var(--border);
+  background: var(--accent);
+  color: #fffaf0;
+  border-color: transparent;
 }
 
 .button-ghost:hover,
 .button-ghost:focus-visible {
-  background: rgba(23, 49, 58, 0.06);
-  color: var(--ink);
-  border-color: rgba(23, 49, 58, 0.22);
-  box-shadow: 0 10px 24px rgba(23, 49, 58, 0.08);
+  background: var(--accent-strong);
+  color: #fffaf0;
+  border-color: transparent;
+  box-shadow: 0 10px 24px rgba(180, 83, 9, 0.18);
 }
 
 .section-card,
@@ -349,26 +354,26 @@ body {
   align-items: center;
   gap: 6px;
   padding: 0.45rem 0.72rem;
-  border-radius: 999px;
+  border-radius: 12px;
   background: rgba(23, 49, 58, 0.08);
   border: 1px solid rgba(23, 49, 58, 0.16);
-  color: var(--ink);
+  color: var(--ink-soft);
   font-size: 0.82rem;
   font-weight: 700;
 }
 
 .hero .button-secondary {
-  background: rgba(255, 250, 240, 0.12);
+  background: var(--accent);
   color: #fffaf0;
-  border-color: rgba(255, 250, 240, 0.24);
+  border-color: transparent;
 }
 
 .hero .button-secondary:hover,
 .hero .button-secondary:focus-visible {
-  background: rgba(255, 250, 240, 0.22);
+  background: var(--accent-strong);
   color: #fffaf0;
-  border-color: rgba(255, 250, 240, 0.38);
-  box-shadow: 0 10px 24px rgba(13, 28, 33, 0.24);
+  border-color: transparent;
+  box-shadow: 0 10px 24px rgba(180, 83, 9, 0.18);
 }
 
 .hero .pill {
@@ -543,11 +548,23 @@ select:focus {
 }
 
 .character-step {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.42rem 0.72rem;
+  border-radius: 12px;
+  background: rgba(23, 49, 58, 0.08);
+  border: 1px solid rgba(23, 49, 58, 0.16);
   font-size: 0.82rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--ink-soft);
+}
+
+.character-step--complete {
+  background: rgba(15, 118, 110, 0.16);
+  border-color: rgba(15, 118, 110, 0.3);
+  color: var(--secondary);
 }
 
 .completion-badge {
@@ -557,8 +574,8 @@ select:focus {
   width: 1.55rem;
   height: 1.55rem;
   border-radius: 999px;
-  background: rgba(15, 118, 110, 0.14);
-  border: 1px solid rgba(15, 118, 110, 0.26);
+  background: rgba(15, 118, 110, 0.18);
+  border: 1px solid rgba(15, 118, 110, 0.34);
   color: var(--secondary);
 }
 
