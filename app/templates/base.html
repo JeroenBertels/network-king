@@ -6,12 +6,12 @@
     <title>{% if page_title %}{{ page_title }} · {% endif %}Network King</title>
     <meta name="theme-color" content="#0f766e">
     <meta name="apple-mobile-web-app-title" content="Network King">
-    <link rel="icon" type="image/svg+xml" href="{{ request.url_for('static', path='favicon.svg') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ request.url_for('static', path='favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ request.url_for('static', path='favicon-16x16.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ request.url_for('static', path='apple-touch-icon.png') }}">
-    <link rel="manifest" href="{{ request.url_for('static', path='site.webmanifest') }}">
-    <link rel="stylesheet" href="{{ request.url_for('static', path='styles.css') }}">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="manifest" href="/static/site.webmanifest">
+    <link rel="stylesheet" href="/static/styles.css">
     {% block head %}{% endblock %}
   </head>
   <body>
@@ -21,7 +21,7 @@
         <div class="topbar-brand">
           <a class="brand-link" href="https://bertels.ai" target="_blank" rel="noreferrer">bertels.ai</a>
           <a class="home-link" href="/">
-            <img class="app-mark" src="{{ request.url_for('static', path='favicon.svg') }}" alt="">
+            <img class="app-mark" src="/static/favicon.svg" alt="">
             <span>Network King</span>
           </a>
         </div>
