@@ -24,7 +24,16 @@
         {% set character = item.character %}
         <article class="character-card{% if not item.show_identity %} character-card--locked{% endif %}{% if item.completed %} character-card--complete{% endif %}">
           <div class="character-card__top">
-            <div class="character-step">Level {{ character.position }}</div>
+            <div class="character-step-group">
+              <div class="character-step">Level {{ character.position }}</div>
+              {% if item.completed %}
+                <span class="completion-badge" aria-label="Completed" title="Completed">
+                  <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path d="M6.4 10.7 3.8 8.1l-1.1 1.1 3.7 3.7 7-7-1.1-1.1z"></path>
+                  </svg>
+                </span>
+              {% endif %}
+            </div>
             {% if item.show_identity %}
               <a class="button button-secondary button-compact" href="/events/{{ event.slug }}/characters/{{ character.id }}">Open character</a>
             {% endif %}
