@@ -68,7 +68,8 @@ def test_admin_character_page_shows_networker_notes(app, client):
     response = client.get(f"/events/{event.slug}/characters/{character.id}")
 
     assert response.status_code == 200
-    assert "Networker notes" in response.text
+    assert "Notes" in response.text
+    assert "Networker notes" not in response.text
     assert "Jane" in response.text
     assert "Nick" in response.text
     assert "Asked about the closing dinner." in response.text
