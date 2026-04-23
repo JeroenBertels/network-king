@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="hero hero-split">
+    <div class="hero-copy">
+      <p class="eyebrow">Admin</p>
+      <h1>Manage networker accounts</h1>
+      <p class="lede">Create accounts, rotate passwords, and connect each networker to one or more events. CSV imports can create or update accounts after validation.</p>
+    </div>
+    <div class="hero-actions">
+      <a class="button button-secondary" href="/admin/events">Manage events</a>
+      <a class="button" href="/admin/networkers/export">Download CSV</a>
+    </div>
+  </section>
+
+  <section class="admin-grid">
+    <article class="section-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Create</p>
+          <h2>New networker</h2>
+        </div>
+      </div>
+      <form method="post" action="/admin/networkers" class="stack">
+        <div class="form-grid">
+          <label class="field">
+            <span>Login</span>
+            <input type="text" name="login" required>
+          </label>
+          <label class="field">
+            <span>Display name</span>
+            <input type="text" name="name">
+          </label>
+        </div>
+        <label class="field">
+          <span>Password</span>
+          <input type="password" name="password" required>
+        </label>
+        <fieldset class="checkbox-panel">
+          <legend>Linked events</legend>
+          <div class="checkbox-grid">
+            {% for event in events %}
+              <label class="checkbox-item">
+                <input type="checkbox" name="event_ids" value="{{ event.id }}">
+                <span>{{ event.name }}</span>
+              </label>
+            {% else %}
+              <p class="muted">Create events first so they can be assigned here.</p>
+            {% endfor %}
+          </div>
+        </fieldset>
+        <button class="button" type="submit">Create networker</button>
+      </form>
+    </article>
+
+    <article class="section-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Import</p>
+          <h2>Validate CSV upload</h2>
+        </div>
+      </div>
+      <form method="post" action="/admin/networkers/import/validate" enctype="multipart/form-data" class="stack">
+        <label class="field">
+          <span>CSV file</span>
+          <input type="file" name="csv_file" accept=".csv,text/csv" required>
+        </label>
+        <button class="button button-secondary" type="submit">Validate import</button>
+      </form>
+      <p class="muted">Expected columns: <code>login</code>, <code>name</code>, <code>password</code>, <code>event_names</code>. Use <code>|</code> between multiple event names.</p>
+    </article>
+  </section>
+
+  {% if import_errors %}
+    <section class="section-card">
+      <h2>Import issues</h2>
+      <ul class="plain-list">
+        {% for error in import_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {% if import_preview %}
+    <section class="section-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Preview</p>
+          <h2>Ready to import</h2>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Login</th>
+              <th>Name</th>
+              <th>Events</th>
+              <th>Password supplied</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in import_preview %}
+              <tr>
+                <td>{{ row.login }}</td>
+                <td>{{ row.name }}</td>
+                <td>{{ row.event_names|join(", ") }}</td>
+                <td>{{ "Yes" if row.password_supplied else "No" }}</td>
+                <td>{{ row.action }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <form method="post" action="/admin/networkers/import/commit">
+        <input type="hidden" name="import_payload" value="{{ import_preview[0].payload }}">
+        <button class="button" type="submit">Confirm import</button>
+      </form>
+    </section>
+  {% endif %}
+
+  <section class="section-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Database</p>
+        <h2>Current networkers</h2>
+      </div>
+    </div>
+    <div class="networker-stack">
+      {% for networker in networkers %}
+        {% set membership_event_ids = networker.memberships | map(attribute='event_id') | list %}
+        <article class="networker-card">
+          <div class="networker-card__header">
+            <div>
+              <h3>{{ networker.login }}</h3>
+              <p class="muted">Created {{ networker.created_at | datetime_label }}</p>
+            </div>
+            <span class="pill">{{ networker.memberships|length }} linked events</span>
+          </div>
+          <form method="post" action="/admin/networkers/{{ networker.id }}/update" class="stack">
+            <div class="form-grid">
+              <label class="field">
+                <span>Display name</span>
+                <input type="text" name="name" value="{{ networker.display_name }}">
+              </label>
+              <label class="field">
+                <span>New password</span>
+                <input type="password" name="password" placeholder="Leave blank to keep current password">
+              </label>
+            </div>
+            <fieldset class="checkbox-panel">
+              <legend>Linked events</legend>
+              <div class="checkbox-grid">
+                {% for event in events %}
+                  <label class="checkbox-item">
+                    <input type="checkbox" name="event_ids" value="{{ event.id }}" {% if event.id in membership_event_ids %}checked{% endif %}>
+                    <span>{{ event.name }}</span>
+                  </label>
+                {% endfor %}
+              </div>
+            </fieldset>
+            <button class="button button-secondary" type="submit">Save networker</button>
+          </form>
+        </article>
+      {% else %}
+        <p class="muted">No networker accounts created yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}
+

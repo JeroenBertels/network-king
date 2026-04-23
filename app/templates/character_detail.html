@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="hero hero-split">
+    <div class="hero-copy">
+      <p class="eyebrow">{{ event.name }}</p>
+      {% if can_view %}
+        <h1>{{ character.fictional_name }}</h1>
+        <p class="lede">Capture whatever details matter for the quiz later. Saving a note here unlocks the next guest in the chain.</p>
+      {% else %}
+        <h1>This character is still locked.</h1>
+        <p class="lede">Scan the currently unlocked badge and add your note there first. Once that note is saved, the next guest will open up.</p>
+      {% endif %}
+    </div>
+    <div class="hero-actions">
+      <a class="button button-secondary" href="/events/{{ event.slug }}">Back to event</a>
+      <a class="button" href="/events/{{ event.slug }}/scan">Scan another badge</a>
+    </div>
+  </section>
+
+  {% if can_view %}
+    <section class="detail-grid">
+      <article class="section-card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Character</p>
+            <h2>{{ character.fictional_name }}</h2>
+          </div>
+          <span class="pill">Level {{ character.position }}</span>
+        </div>
+        {% if character.image_key %}
+          <img class="detail-photo" src="/media/{{ character.image_key }}" alt="{{ character.fictional_name }}">
+        {% endif %}
+        {% if is_admin %}
+          <dl class="meta-list">
+            <div>
+              <dt>Real name</dt>
+              <dd>{{ character.real_name }}</dd>
+            </div>
+            <div>
+              <dt>QR URL</dt>
+              <dd>{{ request.app.state.settings.app_base_url }}/q/{{ character.qr_token }}</dd>
+            </div>
+          </dl>
+          <div class="truth-box">
+            <h3>Admin-only storyline truth</h3>
+            <p>{{ character.storyline_truth or "No hidden storyline notes yet." }}</p>
+          </div>
+        {% endif %}
+      </article>
+
+      <article class="section-card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Notes</p>
+            <h2>Your takeaways</h2>
+          </div>
+        </div>
+        {% if current_user and current_user.role == "networker" and viewer_is_member %}
+          <form method="post" action="/events/{{ event.slug }}/characters/{{ character.id }}/notes" class="stack">
+            <label class="field">
+              <span>What should you remember?</span>
+              <textarea name="note_text" rows="8" required>{{ note.note_text if note else "" }}</textarea>
+            </label>
+            <button class="button" type="submit">Save note</button>
+          </form>
+        {% elif is_admin %}
+          <p class="muted">Admins can inspect the character but do not save gameplay notes.</p>
+        {% else %}
+          <p class="muted">Log in with a networker account linked to this event to save notes and unlock progress.</p>
+        {% endif %}
+      </article>
+    </section>
+  {% else %}
+    <section class="section-card narrow-card">
+      <p class="muted">Only admins and the correct networker account can reveal this guest. Public visitors will always see the locked state.</p>
+    </section>
+  {% endif %}
+{% endblock %}
+

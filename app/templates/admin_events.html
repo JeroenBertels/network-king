@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="hero hero-split">
+    <div class="hero-copy">
+      <p class="eyebrow">Admin</p>
+      <h1>Manage network events</h1>
+      <p class="lede">Create events, update names, export the current database, or validate a CSV before importing anything into the system.</p>
+    </div>
+    <div class="hero-actions">
+      <a class="button button-secondary" href="/admin/networkers">Manage networkers</a>
+      <a class="button" href="/admin/events/export">Download CSV</a>
+    </div>
+  </section>
+
+  <section class="admin-grid">
+    <article class="section-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Create</p>
+          <h2>New event</h2>
+        </div>
+      </div>
+      <form method="post" action="/admin/events" class="stack">
+        <label class="field">
+          <span>Event name</span>
+          <input type="text" name="name" required>
+        </label>
+        <button class="button" type="submit">Create event</button>
+      </form>
+    </article>
+
+    <article class="section-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Import</p>
+          <h2>Validate CSV upload</h2>
+        </div>
+      </div>
+      <form method="post" action="/admin/events/import/validate" enctype="multipart/form-data" class="stack">
+        <label class="field">
+          <span>CSV file</span>
+          <input type="file" name="csv_file" accept=".csv,text/csv" required>
+        </label>
+        <button class="button button-secondary" type="submit">Validate import</button>
+      </form>
+      <p class="muted">Expected column: <code>event_name</code></p>
+    </article>
+  </section>
+
+  {% if import_errors %}
+    <section class="section-card">
+      <h2>Import issues</h2>
+      <ul class="plain-list">
+        {% for error in import_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {% if import_preview %}
+    <section class="section-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Preview</p>
+          <h2>Ready to import</h2>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Event name</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in import_preview %}
+              <tr>
+                <td>{{ row.event_name }}</td>
+                <td>{{ row.action }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <form method="post" action="/admin/events/import/commit">
+        <input type="hidden" name="import_payload" value="{{ import_preview[0].payload }}">
+        <button class="button" type="submit">Confirm import</button>
+      </form>
+    </section>
+  {% endif %}
+
+  <section class="section-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Database</p>
+        <h2>Current events</h2>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Characters</th>
+            <th>Networkers</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for event in events %}
+            <tr>
+              <td>
+                <form method="post" action="/admin/events/{{ event.id }}/update" class="inline-form">
+                  <input type="text" name="name" value="{{ event.name }}" required>
+                  <button class="button button-secondary" type="submit">Save</button>
+                </form>
+              </td>
+              <td>{{ event.slug }}</td>
+              <td>{{ event.characters|length }}</td>
+              <td>{{ event.memberships|length }}</td>
+              <td><a class="button button-ghost" href="/admin/events/{{ event.id }}/characters">Manage characters</a></td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="5">No events created yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}
+

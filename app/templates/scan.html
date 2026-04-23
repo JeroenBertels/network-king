@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">QR Scanner</p>
+      <h1>Scan a badge for {{ event.name }}</h1>
+      <p class="lede">Use the camera when your browser supports it, or paste a QR URL or token by hand. The app will route you to the character page if the badge belongs to this event.</p>
+    </div>
+  </section>
+
+  <section class="section-card scanner-shell" data-scanner>
+    <div class="scanner-stage">
+      <video class="scanner-video" playsinline muted></video>
+      <div class="scanner-frame"></div>
+    </div>
+    <p class="scanner-status" data-scanner-status>Tap “Start camera” to begin scanning.</p>
+    <div class="button-row">
+      <button class="button" type="button" data-scan-start>Start camera</button>
+      <button class="button button-secondary" type="button" data-scan-stop>Stop camera</button>
+    </div>
+    <label class="field">
+      <span>Decode from image</span>
+      <input type="file" accept="image/*" data-scan-image>
+    </label>
+    <form method="post" action="/events/{{ event.slug }}/scan" class="stack" data-scan-form>
+      <label class="field">
+        <span>Manual QR value</span>
+        <input type="text" name="qr_value" placeholder="https://network-king.bertels.ai/q/..." data-scan-input required>
+      </label>
+      <button class="button" type="submit">Open character</button>
+    </form>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ request.url_for('static', path='scanner.js') }}"></script>
+{% endblock %}
+

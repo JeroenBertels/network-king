@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="hero hero-split">
+    <div class="hero-copy">
+      <p class="eyebrow">Admin</p>
+      <h1>Manage characters for {{ event.name }}</h1>
+      <p class="lede">Build the reveal order, upload profile photos, export or import the roster, and generate printable QR badge PDFs for the whole event.</p>
+    </div>
+    <div class="hero-actions">
+      <a class="button button-secondary" href="/admin/events">Back to events</a>
+      <a class="button" href="/admin/events/{{ event.id }}/characters/badges.zip">Download badge ZIP</a>
+    </div>
+  </section>
+
+  <section class="admin-grid">
+    <article class="section-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Create</p>
+          <h2>New character</h2>
+        </div>
+      </div>
+      <form method="post" action="/admin/events/{{ event.id }}/characters" class="stack">
+        <div class="form-grid">
+          <label class="field">
+            <span>Position</span>
+            <input type="number" min="1" name="position" required>
+          </label>
+          <label class="field">
+            <span>Real name</span>
+            <input type="text" name="real_name" required>
+          </label>
+        </div>
+        <label class="field">
+          <span>Fictional name</span>
+          <input type="text" name="fictional_name" required>
+        </label>
+        <label class="field">
+          <span>Storyline truth</span>
+          <textarea name="storyline_truth" rows="5"></textarea>
+        </label>
+        <button class="button" type="submit">Create character</button>
+      </form>
+    </article>
+
+    <article class="section-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Transfer</p>
+          <h2>Import or export roster</h2>
+        </div>
+      </div>
+      <div class="button-row">
+        <a class="button button-secondary" href="/admin/events/{{ event.id }}/characters/export">Download CSV</a>
+      </div>
+      <form method="post" action="/admin/events/{{ event.id }}/characters/import/validate" enctype="multipart/form-data" class="stack">
+        <label class="field">
+          <span>CSV file</span>
+          <input type="file" name="csv_file" accept=".csv,text/csv" required>
+        </label>
+        <button class="button button-secondary" type="submit">Validate import</button>
+      </form>
+      <p class="muted">Expected columns: <code>event_name</code>, <code>position</code>, <code>real_name</code>, <code>fictional_name</code>, <code>storyline_truth</code>.</p>
+    </article>
+  </section>
+
+  {% if import_errors %}
+    <section class="section-card">
+      <h2>Import issues</h2>
+      <ul class="plain-list">
+        {% for error in import_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {% if import_preview %}
+    <section class="section-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Preview</p>
+          <h2>Ready to import</h2>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Position</th>
+              <th>Real name</th>
+              <th>Fictional name</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in import_preview %}
+              <tr>
+                <td>{{ row.position }}</td>
+                <td>{{ row.real_name }}</td>
+                <td>{{ row.fictional_name }}</td>
+                <td>{{ row.action }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <form method="post" action="/admin/events/{{ event.id }}/characters/import/commit">
+        <input type="hidden" name="import_payload" value="{{ import_preview[0].payload }}">
+        <button class="button" type="submit">Confirm import</button>
+      </form>
+    </section>
+  {% endif %}
+
+  <section class="character-admin-grid">
+    {% for character in event.characters %}
+      <article class="section-card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Level {{ character.position }}</p>
+            <h2>{{ character.fictional_name }}</h2>
+          </div>
+          <span class="pill">{{ character.real_name }}</span>
+        </div>
+        {% if character.image_key %}
+          <img class="character-photo admin-photo" src="/media/{{ character.image_key }}" alt="{{ character.fictional_name }}">
+        {% endif %}
+        <form method="post" action="/admin/events/{{ event.id }}/characters/{{ character.id }}/update" class="stack">
+          <div class="form-grid">
+            <label class="field">
+              <span>Position</span>
+              <input type="number" min="1" name="position" value="{{ character.position }}" required>
+            </label>
+            <label class="field">
+              <span>Real name</span>
+              <input type="text" name="real_name" value="{{ character.real_name }}" required>
+            </label>
+          </div>
+          <label class="field">
+            <span>Fictional name</span>
+            <input type="text" name="fictional_name" value="{{ character.fictional_name }}" required>
+          </label>
+          <label class="field">
+            <span>Storyline truth</span>
+            <textarea name="storyline_truth" rows="5">{{ character.storyline_truth }}</textarea>
+          </label>
+          <button class="button button-secondary" type="submit">Save character</button>
+        </form>
+        <form method="post" action="/admin/events/{{ event.id }}/characters/{{ character.id }}/image" enctype="multipart/form-data" class="stack upload-form">
+          <label class="field">
+            <span>Profile image</span>
+            <input type="file" name="image" accept="image/*">
+          </label>
+          <button class="button button-ghost" type="submit">Upload image</button>
+        </form>
+        <p class="muted">QR URL: {{ request.app.state.settings.app_base_url }}/q/{{ character.qr_token }}</p>
+      </article>
+    {% else %}
+      <article class="section-card empty-state">
+        <h2>No characters yet</h2>
+        <p>Add the guest roster to unlock badge downloads and gameplay.</p>
+      </article>
+    {% endfor %}
+  </section>
+{% endblock %}
+

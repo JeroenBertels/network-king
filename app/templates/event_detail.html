@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="hero hero-split">
+    <div class="hero-copy">
+      <p class="eyebrow">Network Event</p>
+      <h1>{{ event.name }}</h1>
+      {% if viewer_is_member and progress_state %}
+        <p class="lede">You have completed {{ progress_state.completed_count }} of {{ event.characters|length }} characters. Scan the next badge or revisit any completed conversation.</p>
+      {% elif current_user and current_user.role == "networker" %}
+        <p class="lede">This account is not linked to this event, so you are seeing the public board.</p>
+      {% else %}
+        <p class="lede">Public viewers can follow progress, inspect the flow, and open the QR scanner. Locked characters stay hidden until a networker earns access.</p>
+      {% endif %}
+    </div>
+    <div class="hero-actions">
+      <a class="button" href="/events/{{ event.slug }}/scan">Start QR scanner</a>
+      {% if is_admin %}
+        <a class="button button-secondary" href="/admin/events/{{ event.id }}/characters">Manage characters</a>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="section-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Character Flow</p>
+        <h2>Unlock path</h2>
+      </div>
+      {% if viewer_is_member and progress_state %}
+        <span class="pill">Next unlock: level {{ progress_state.unlocked_position }}</span>
+      {% endif %}
+    </div>
+
+    <div class="flow">
+      {% for item in character_cards %}
+        {% set character = item.character %}
+        <article class="character-card{% if not item.show_identity %} character-card--locked{% endif %}{% if item.completed %} character-card--complete{% endif %}">
+          <div class="character-step">Level {{ character.position }}</div>
+          {% if item.show_identity %}
+            {% if character.image_key %}
+              <img class="character-photo" src="/media/{{ character.image_key }}" alt="{{ character.fictional_name }}">
+            {% endif %}
+            <h3>{{ character.fictional_name }}</h3>
+            <p class="muted">{{ "Completed" if item.completed else "Unlocked" }}</p>
+            <a class="button button-secondary" href="/events/{{ event.slug }}/characters/{{ character.id }}">Open character</a>
+          {% else %}
+            <h3>Locked character</h3>
+            <p class="muted">Keep the chain moving to reveal this guest.</p>
+            <span class="pill">Hidden</span>
+          {% endif %}
+        </article>
+      {% else %}
+        <article class="section-card empty-state">
+          <h3>No characters yet</h3>
+          <p>Add the guest list from the admin panel to bring this event to life.</p>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Leaderboard</p>
+        <h2>Who is furthest ahead?</h2>
+      </div>
+    </div>
+
+    <div class="leaderboard">
+      {% for entry in leaderboard %}
+        <article class="leaderboard-row">
+          <div>
+            <strong>{{ loop.index }}. {{ entry.user.display_name }}</strong>
+            <p class="muted">{{ entry.completed_at | datetime_label }}</p>
+          </div>
+          <span class="leaderboard-score">{{ entry.completed_count }}/{{ event.characters|length }}</span>
+        </article>
+      {% else %}
+        <p class="muted">No networker accounts are linked to this event yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}
+
