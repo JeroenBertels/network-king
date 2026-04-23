@@ -1,17 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <section class="hero hero-split">
-    <div class="hero-copy">
-      <p class="eyebrow">{{ event.name }}</p>
-      {% if can_view %}
-        <h1>{{ character.fictional_name }}</h1>
-        <p class="lede">Capture whatever details matter for the quiz later. Saving a note here unlocks the next guest in the chain.</p>
-      {% else %}
-        <h1>This character is still locked.</h1>
-        <p class="lede">Scan the currently unlocked badge and add your note there first. Once that note is saved, the next guest will open up.</p>
-      {% endif %}
-    </div>
+  <section class="page-header">
+    {% if can_view %}
+      <h1>{{ character.fictional_name }}</h1>
+    {% else %}
+      <h1>This character is still locked.</h1>
+    {% endif %}
     <div class="hero-actions">
       <a class="button button-secondary" href="/events/{{ event.slug }}">Back to event</a>
       <a class="button" href="/events/{{ event.slug }}/scan">Scan another badge</a>

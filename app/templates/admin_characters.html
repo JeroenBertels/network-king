@@ -1,12 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <section class="hero hero-split">
-    <div class="hero-copy">
-      <p class="eyebrow">Admin</p>
-      <h1>Manage characters for {{ event.name }}</h1>
-      <p class="lede">Build the reveal order, upload profile photos, export or import the roster, and generate printable QR badge PDFs for the whole event.</p>
-    </div>
+  <section class="page-header">
+    <h1>Manage characters for {{ event.name }}</h1>
     <div class="hero-actions">
       <a class="button button-secondary" href="/admin/events">Back to events</a>
       <a class="button" href="/admin/events/{{ event.id }}/characters/badges.zip">Download badge ZIP</a>

@@ -1,12 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <section class="hero hero-split">
-    <div class="hero-copy">
-      <p class="eyebrow">Admin</p>
-      <h1>Manage networker accounts</h1>
-      <p class="lede">Create accounts, rotate passwords, and connect each networker to one or more events. CSV imports can create or update accounts after validation.</p>
-    </div>
+  <section class="page-header">
+    <h1>Manage networker accounts</h1>
     <div class="hero-actions">
       <a class="button button-secondary" href="/admin/events">Manage events</a>
       <a class="button" href="/admin/networkers/export">Download CSV</a>
@@ -170,4 +166,3 @@
     </div>
   </section>
 {% endblock %}
-

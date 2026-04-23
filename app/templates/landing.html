@@ -1,12 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <section class="hero">
-    <div class="hero-copy">
-      <p class="eyebrow">Live Game Board</p>
-      <h1>Track every network event from one place.</h1>
-      <p class="lede">Public visitors can follow the standings. Networkers can scan characters and unlock the next level. Admins can tune the whole experience behind the scenes.</p>
-    </div>
+  <section class="page-header">
+    <h1>Network events</h1>
     {% if is_admin %}
       <div class="hero-actions">
         <a class="button" href="/admin/events">Manage events</a>

@@ -1,15 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <section class="hero">
-    <div class="hero-copy">
-      <p class="eyebrow">QR Scanner</p>
-      <h1>Scan a badge for {{ event.name }}</h1>
-      <p class="lede">Use the camera when your browser supports it, or paste a scanned code by hand. The app will route you to the character page if the badge belongs to this event.</p>
-    </div>
-  </section>
-
   <section class="section-card scanner-shell" data-scanner>
+    <h1 class="card-title">Scan a badge for {{ event.name }}</h1>
     <div class="scanner-stage">
       <video class="scanner-video" playsinline muted></video>
       <div class="scanner-frame"></div>
