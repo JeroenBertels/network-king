@@ -24,6 +24,7 @@
             <img class="app-mark" src="/static/favicon.svg" alt="">
             <span>Network King</span>
           </a>
+          <button class="button help-trigger" type="button" aria-label="Open gameplay guide" data-help-open>?</button>
         </div>
         <div class="top-actions">
           {% if current_user %}
@@ -46,6 +47,73 @@
         {% block content %}{% endblock %}
       </main>
     </div>
+    <dialog class="help-dialog" data-help-dialog>
+      <div class="help-dialog__content">
+        <div class="help-dialog__header">
+          <div>
+            <p class="eyebrow">Gameplay Guide</p>
+            <h2>How Network King works</h2>
+          </div>
+          <button class="button help-trigger help-trigger--close" type="button" aria-label="Close gameplay guide" data-help-close>&times;</button>
+        </div>
+        <div class="help-guide">
+          <section class="help-card">
+            <h3>The goal</h3>
+            <p>Meet each fictional character in order, save useful notes, and unlock the next level until you finish the full trail.</p>
+          </section>
+          <section class="help-card">
+            <h3>For networkers</h3>
+            <ul class="plain-list help-list">
+              <li>Open your event and start with the first unlocked level.</li>
+              <li>Scan a badge QR code to open that character.</li>
+              <li>Write down your takeaway to complete that level.</li>
+              <li>Once a note is saved, the next level unlocks automatically.</li>
+            </ul>
+          </section>
+          <section class="help-card">
+            <h3>For admins</h3>
+            <ul class="plain-list help-list">
+              <li>Create events, networkers, and characters.</li>
+              <li>Download printable badge PDFs with QR codes.</li>
+              <li>Track what networkers noted for each character.</li>
+              <li>Use CSV import and export to manage larger lists quickly.</li>
+            </ul>
+          </section>
+          <section class="help-card">
+            <h3>What everyone sees</h3>
+            <ul class="plain-list help-list">
+              <li>Public visitors can browse events and see overall progress.</li>
+              <li>Networkers only reveal characters they have unlocked.</li>
+              <li>The leaderboard ranks players by completed levels.</li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </dialog>
+    <script>
+      (() => {
+        const dialog = document.querySelector("[data-help-dialog]");
+        const openButton = document.querySelector("[data-help-open]");
+        const closeButton = document.querySelector("[data-help-close]");
+        if (!dialog || !openButton || !closeButton || typeof dialog.showModal !== "function") {
+          return;
+        }
+
+        openButton.addEventListener("click", () => dialog.showModal());
+        closeButton.addEventListener("click", () => dialog.close());
+        dialog.addEventListener("click", (event) => {
+          const bounds = dialog.getBoundingClientRect();
+          const clickedInside =
+            event.clientX >= bounds.left &&
+            event.clientX <= bounds.right &&
+            event.clientY >= bounds.top &&
+            event.clientY <= bounds.bottom;
+          if (!clickedInside) {
+            dialog.close();
+          }
+        });
+      })();
+    </script>
     {% block scripts %}{% endblock %}
   </body>
 </html>
