@@ -63,6 +63,15 @@ def test_public_and_unlinked_networker_only_see_locked_character(app, client):
     assert "Visible Only Later" not in outsider_response.text
 
 
+def test_header_includes_gameplay_guide_button_and_content(app, client):
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert 'data-help-open' in response.text
+    assert "How Network King works" in response.text
+    assert "Gameplay Guide" in response.text
+
+
 def test_admin_routes_require_admin_role(app, client):
     create_user(app, "host", "top-secret", role="admin", display_name="Host")
     create_user(app, "guest", "guess-me")
