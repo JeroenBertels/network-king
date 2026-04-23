@@ -739,7 +739,11 @@ async def download_badges(request: Request, event_id: int):
         event = _load_event(session, event_id)
         if event is None:
             raise HTTPException(status_code=404, detail="Event not found.")
-        payload = build_badge_zip(sorted(event.characters, key=lambda item: item.position), request.app.state.settings.app_base_url)
+        payload = build_badge_zip(
+            sorted(event.characters, key=lambda item: item.position),
+            request.app.state.settings.app_base_url,
+            event.name,
+        )
     finally:
         session.close()
     headers = {"Content-Disposition": f'attachment; filename="{event.slug}-badges.zip"'}
