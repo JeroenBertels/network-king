@@ -19,7 +19,7 @@
     <div class="flow">
       {% for item in character_cards %}
         {% set character = item.character %}
-        <article class="character-card{% if not item.show_identity %} character-card--locked{% endif %}{% if item.completed %} character-card--complete{% endif %}">
+        <article class="character-card{% if not item.show_name %} character-card--locked{% endif %}{% if item.completed %} character-card--complete{% endif %}">
           <div class="character-card__top">
             <div class="character-step-group">
               <div class="character-step{% if item.completed %} character-step--complete{% endif %}">Level {{ character.position }}</div>
@@ -31,12 +31,12 @@
                 </span>
               {% endif %}
             </div>
-            {% if item.show_identity %}
+            {% if item.show_revealed_actions %}
               <a class="button button-secondary button-compact" href="/events/{{ event.slug }}/characters/{{ character.id }}">Open character</a>
             {% endif %}
           </div>
-          {% if item.show_identity %}
-            {% if character.image_key %}
+          {% if item.show_name %}
+            {% if item.show_revealed_actions and character.image_key %}
               <img class="character-photo" src="/media/{{ character.image_key }}" alt="{{ character.fictional_name }}">
             {% endif %}
             <h3>{{ character.fictional_name }}</h3>
