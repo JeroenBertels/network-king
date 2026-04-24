@@ -303,6 +303,7 @@ body {
   justify-content: center;
   gap: 8px;
   font: inherit;
+  font-size: 0.9rem;
   padding: 0.85rem 1.15rem;
   border-radius: 999px;
   border: 1px solid transparent;
@@ -442,7 +443,7 @@ body {
   background: rgba(23, 49, 58, 0.08);
   border: 1px solid rgba(23, 49, 58, 0.16);
   color: var(--ink-soft);
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   font-weight: 700;
 }
 
@@ -638,7 +639,7 @@ select:focus {
   border-radius: 12px;
   background: rgba(23, 49, 58, 0.08);
   border: 1px solid rgba(23, 49, 58, 0.16);
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
