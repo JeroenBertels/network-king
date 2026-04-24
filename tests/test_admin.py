@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import csv
+import html
 import io
 from io import StringIO
 from zipfile import ZipFile
 
 from sqlalchemy import select
 
-from app.models import Character, CharacterNote
+from app.models import Character, CharacterNote, Event, User
 from app.utils import encode_payload
 from tests.conftest import create_character, create_event, create_note, create_user, link_user_to_event, login
 
@@ -75,6 +76,70 @@ def test_admin_character_page_shows_networker_notes(app, client):
     assert "Asked about the closing dinner." in response.text
     assert "Works in finance and loves sailing." in response.text
     assert "Admins can inspect the character" not in response.text
+
+
+def test_admin_can_delete_networker(app, client):
+    admin = create_user(app, "admin", "admin-pass", role="admin")
+    networker = create_user(app, "jane", "note-pass", display_name="Jane")
+
+    login(client, admin.login, "admin-pass")
+    response = client.post(f"/admin/networkers/{networker.id}/delete", follow_redirects=True)
+    page = html.unescape(response.text)
+
+    assert response.status_code == 200
+    assert "Deleted networker 'jane'." in page
+
+    session = app.state.session_factory()
+    try:
+        deleted_networker = session.get(User, networker.id)
+    finally:
+        session.close()
+
+    assert deleted_networker is None
+
+
+def test_admin_can_delete_event(app, client):
+    admin = create_user(app, "admin", "admin-pass", role="admin")
+    event = create_event(app, "Delete Me", "delete-me")
+    character = create_character(app, event.id, 1, "Disposable")
+
+    login(client, admin.login, "admin-pass")
+    response = client.post(f"/admin/events/{event.id}/delete", follow_redirects=True)
+    page = html.unescape(response.text)
+
+    assert response.status_code == 200
+    assert "Deleted event 'Delete Me'." in page
+
+    session = app.state.session_factory()
+    try:
+        deleted_event = session.get(Event, event.id)
+        deleted_character = session.get(Character, character.id)
+    finally:
+        session.close()
+
+    assert deleted_event is None
+    assert deleted_character is None
+
+
+def test_admin_can_delete_character(app, client):
+    admin = create_user(app, "admin", "admin-pass", role="admin")
+    event = create_event(app, "Character Cleanup", "character-cleanup")
+    character = create_character(app, event.id, 1, "Disposable")
+
+    login(client, admin.login, "admin-pass")
+    response = client.post(f"/admin/events/{event.id}/characters/{character.id}/delete", follow_redirects=True)
+    page = html.unescape(response.text)
+
+    assert response.status_code == 200
+    assert "Deleted character 'Disposable'." in page
+
+    session = app.state.session_factory()
+    try:
+        deleted_character = session.get(Character, character.id)
+    finally:
+        session.close()
+
+    assert deleted_character is None
 
 
 def test_character_export_includes_note_columns_and_import_ignores_them(app, client):

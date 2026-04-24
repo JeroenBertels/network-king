@@ -302,6 +302,24 @@ async def update_event(request: Request, event_id: int, name: str = Form(...)):
     return RedirectResponse("/admin/events", status_code=303)
 
 
+@router.post("/events/{event_id}/delete")
+async def delete_event(request: Request, event_id: int):
+    if guard := _admin_guard(request):
+        return guard
+    session = request.app.state.session_factory()
+    try:
+        event = _load_event(session, event_id)
+        if event is None:
+            raise HTTPException(status_code=404, detail="Event not found.")
+        event_name = event.name
+        session.delete(event)
+        session.commit()
+    finally:
+        session.close()
+    add_flash(request, "success", f"Deleted event '{event_name}'.")
+    return RedirectResponse("/admin/events", status_code=303)
+
+
 @router.get("/events/export")
 async def export_events(request: Request):
     if guard := _admin_guard(request):
@@ -433,6 +451,24 @@ async def update_networker(
     finally:
         session.close()
     add_flash(request, "success", "Networker updated.")
+    return RedirectResponse("/admin/networkers", status_code=303)
+
+
+@router.post("/networkers/{user_id}/delete")
+async def delete_networker(request: Request, user_id: int):
+    if guard := _admin_guard(request):
+        return guard
+    session = request.app.state.session_factory()
+    try:
+        user = session.scalar(select(User).where(User.id == user_id, User.role == "networker"))
+        if user is None:
+            raise HTTPException(status_code=404, detail="Networker not found.")
+        login = user.login
+        session.delete(user)
+        session.commit()
+    finally:
+        session.close()
+    add_flash(request, "success", f"Deleted networker '{login}'.")
     return RedirectResponse("/admin/networkers", status_code=303)
 
 
@@ -608,6 +644,24 @@ async def update_character(
     finally:
         session.close()
     add_flash(request, "success", "Character updated.")
+    return RedirectResponse(f"/admin/events/{event_id}/characters", status_code=303)
+
+
+@router.post("/events/{event_id}/characters/{character_id}/delete")
+async def delete_character(request: Request, event_id: int, character_id: int):
+    if guard := _admin_guard(request):
+        return guard
+    session = request.app.state.session_factory()
+    try:
+        character = session.scalar(select(Character).where(Character.id == character_id, Character.event_id == event_id))
+        if character is None:
+            raise HTTPException(status_code=404, detail="Character not found.")
+        fictional_name = character.fictional_name
+        session.delete(character)
+        session.commit()
+    finally:
+        session.close()
+    add_flash(request, "success", f"Deleted character '{fictional_name}'.")
     return RedirectResponse(f"/admin/events/{event_id}/characters", status_code=303)
 
 

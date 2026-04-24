@@ -150,6 +150,9 @@
           </label>
           <button class="button button-ghost" type="submit">Upload image</button>
         </form>
+        <form method="post" action="/admin/events/{{ event.id }}/characters/{{ character.id }}/delete" class="stack" onsubmit="return confirm('Delete this character and all of its notes?');">
+          <button class="button" type="submit">Delete character</button>
+        </form>
       </article>
     {% else %}
       <article class="section-card empty-state">

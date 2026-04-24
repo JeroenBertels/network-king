@@ -159,6 +159,9 @@
             </fieldset>
             <button class="button button-secondary" type="submit">Save networker</button>
           </form>
+          <form method="post" action="/admin/networkers/{{ networker.id }}/delete" class="stack" onsubmit="return confirm('Delete this networker account and all of its saved notes?');">
+            <button class="button" type="submit">Delete networker</button>
+          </form>
         </article>
       {% else %}
         <p class="muted">No networker accounts created yet.</p>
