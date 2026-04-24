@@ -116,7 +116,14 @@
               </td>
               <td>{{ event.characters|length }}</td>
               <td>{{ event.memberships|length }}</td>
-              <td><a class="button button-ghost" href="/admin/events/{{ event.id }}/characters">Manage characters</a></td>
+              <td>
+                <div class="button-row">
+                  <a class="button button-ghost" href="/admin/events/{{ event.id }}/characters">Manage characters</a>
+                  <form method="post" action="/admin/events/{{ event.id }}/delete" onsubmit="return confirm('Delete this event and all of its characters, notes, and memberships?');">
+                    <button class="button" type="submit">Delete event</button>
+                  </form>
+                </div>
+              </td>
             </tr>
           {% else %}
             <tr>

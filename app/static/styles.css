@@ -125,6 +125,10 @@ body {
   gap: 10px;
 }
 
+.button-row form {
+  margin: 0;
+}
+
 .page {
   display: grid;
   gap: 18px;
@@ -298,6 +302,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  font: inherit;
   padding: 0.85rem 1.15rem;
   border-radius: 999px;
   border: 1px solid transparent;
