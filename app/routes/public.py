@@ -7,7 +7,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.auth import is_admin
-from app.gameplay import build_progress_state, can_access_character, leaderboard_for_event, user_in_event
+from app.gameplay import (
+    build_progress_state,
+    can_access_character,
+    can_reveal_character,
+    leaderboard_for_event,
+    user_in_event,
+)
 from app.models import Character, CharacterNote, Event, EventMembership, User
 from app.utils import add_flash, extract_qr_token
 from app.web import current_user_from_request, template_context
@@ -62,24 +68,51 @@ def _find_character(event: Event, character_id: int):
     return None
 
 
+def _notes_for_user(event: Event, user: User):
+    return [note for note in event.notes if note.user_id == user.id]
+
+
+def _ensure_character_discovery(session, user: User, event: Event, character: Character):
+    existing_note = session.scalar(
+        select(CharacterNote).where(
+            CharacterNote.user_id == user.id,
+            CharacterNote.character_id == character.id,
+        )
+    )
+    if existing_note is not None:
+        return
+
+    session.add(
+        CharacterNote(
+            user_id=user.id,
+            event_id=event.id,
+            character_id=character.id,
+            note_text="",
+        )
+    )
+    session.commit()
+
+
 def _build_character_cards(event: Event, request: Request):
     current_user = current_user_from_request(request)
     note_lookup = {}
     progress_state = None
     if current_user and user_in_event(current_user, event):
-        user_notes = [note for note in event.notes if note.user_id == current_user.id and note.note_text.strip()]
+        user_notes = _notes_for_user(event, current_user)
         progress_state = build_progress_state(list(event.characters), user_notes)
         note_lookup = progress_state.note_by_character_id
     cards = []
     for character in event.characters:
         accessible = bool(progress_state and can_access_character(current_user, character, progress_state))
         completed = bool(progress_state and character.id in progress_state.note_by_character_id)
+        revealed = bool(progress_state and can_reveal_character(current_user, character, progress_state))
         cards.append(
             {
                 "character": character,
                 "accessible": accessible or is_admin(current_user),
                 "completed": completed,
-                "show_identity": accessible or is_admin(current_user),
+                "show_name": accessible or is_admin(current_user),
+                "show_revealed_actions": revealed or is_admin(current_user),
                 "is_current_unlock": bool(progress_state and character.position == progress_state.unlocked_position and not completed),
                 "note": note_lookup.get(character.id),
             }
@@ -197,10 +230,10 @@ async def character_page(request: Request, slug: str, character_id: int):
         admin_notes = []
         can_view = is_admin(current_user)
         if current_user and user_in_event(current_user, event):
-            user_notes = [note for note in event.notes if note.user_id == current_user.id and note.note_text.strip()]
+            user_notes = _notes_for_user(event, current_user)
             progress_state = build_progress_state(list(event.characters), user_notes)
             note = progress_state.note_by_character_id.get(character.id)
-            can_view = can_view or can_access_character(current_user, character, progress_state)
+            can_view = can_view or can_reveal_character(current_user, character, progress_state)
         if is_admin(current_user):
             user_lookup = {membership.user_id: membership.user for membership in event.memberships}
             admin_notes = []
@@ -264,10 +297,13 @@ async def save_note(request: Request, slug: str, character_id: int, note_text: s
         character = _find_character(event, character_id)
         if character is None:
             raise HTTPException(status_code=404, detail="Character not found.")
-        user_notes = [note for note in event.notes if note.user_id == current_user.id and note.note_text.strip()]
+        user_notes = _notes_for_user(event, current_user)
         progress_state = build_progress_state(list(event.characters), user_notes)
         if not can_access_character(current_user, character, progress_state):
             add_flash(request, "error", "That character is still locked.")
+            return RedirectResponse(f"/events/{slug}", status_code=303)
+        if not can_reveal_character(current_user, character, progress_state):
+            add_flash(request, "error", "Scan this badge first to open the character.")
             return RedirectResponse(f"/events/{slug}", status_code=303)
 
         existing_note = session.scalar(
@@ -296,14 +332,27 @@ async def save_note(request: Request, slug: str, character_id: int, note_text: s
 
 @router.get("/q/{qr_token}")
 async def qr_entry(request: Request, qr_token: str):
+    current_user = current_user_from_request(request)
+    redirect_target = None
     session = request.app.state.session_factory()
     try:
         character = _load_character_by_token(session, qr_token)
+        if (
+            character is not None
+            and current_user is not None
+            and current_user.role == "networker"
+            and user_in_event(current_user, character.event)
+        ):
+            progress_state = build_progress_state(list(character.event.characters), _notes_for_user(character.event, current_user))
+            if can_access_character(current_user, character, progress_state):
+                _ensure_character_discovery(session, current_user, character.event, character)
+        if character is not None:
+            redirect_target = f"/events/{character.event.slug}/characters/{character.id}"
     finally:
         session.close()
     if character is None:
         raise HTTPException(status_code=404, detail="QR code not found.")
-    return RedirectResponse(f"/events/{character.event.slug}/characters/{character.id}", status_code=303)
+    return RedirectResponse(redirect_target, status_code=303)
 
 
 @router.get("/media/{image_key:path}")
@@ -326,9 +375,9 @@ async def media_file(request: Request, image_key: str):
 
         can_view = is_admin(current_user)
         if current_user and user_in_event(current_user, character.event):
-            user_notes = [note for note in character.event.notes if note.user_id == current_user.id and note.note_text.strip()]
+            user_notes = _notes_for_user(character.event, current_user)
             progress_state = build_progress_state(list(character.event.characters), user_notes)
-            can_view = can_view or can_access_character(current_user, character, progress_state)
+            can_view = can_view or can_reveal_character(current_user, character, progress_state)
         if not can_view:
             raise HTTPException(status_code=404, detail="Image not found.")
 

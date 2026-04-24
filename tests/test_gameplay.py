@@ -5,7 +5,7 @@ from app.utils import encode_payload
 from tests.conftest import create_character, create_event, create_user, fetch_user, fetch_user_with_memberships, link_user_to_event, login
 
 
-def test_networker_progression_unlocks_next_character(app, client):
+def test_networker_must_scan_before_unlocked_character_can_open(app, client):
     user = create_user(app, "nick", "secret-pass", display_name="Nick")
     event = create_event(app, "Bachelor Bash", "bachelor-bash")
     first = create_character(app, event.id, 1, "Captain Card")
@@ -20,6 +20,11 @@ def test_networker_progression_unlocks_next_character(app, client):
     body = response.text
     assert "Captain Card" in body
     assert "Deal Maker" not in body
+    assert "Open character" not in body
+
+    locked_response = client.get(f"/events/{event.slug}/characters/{first.id}")
+    assert locked_response.status_code == 200
+    assert "still locked" in locked_response.text.lower()
 
     response = client.post(
         f"/events/{event.slug}/characters/{first.id}/notes",
@@ -27,12 +32,44 @@ def test_networker_progression_unlocks_next_character(app, client):
         follow_redirects=True,
     )
     assert response.status_code == 200
+    assert "Scan this badge first to open the character." in response.text
+
+    response = client.get(f"/q/{first.qr_token}", follow_redirects=True)
+    assert response.status_code == 200
+    assert "Captain Card" in response.text
+    assert "Save note" in response.text
+
+    response = client.post(
+        f"/events/{event.slug}/characters/{first.id}/notes",
+        data={"note_text": "Strong opening story"},
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert "Your notes are saved." in response.text
 
     response = client.get(f"/events/{event.slug}")
     body = response.text
     assert "Captain Card" in body
     assert "Deal Maker" in body
     assert "Silent Closer" not in body
+    assert body.count("Open character") == 1
+
+    locked_response = client.get(f"/events/{event.slug}/characters/{second.id}")
+    assert locked_response.status_code == 200
+    assert "still locked" in locked_response.text.lower()
+
+    response = client.post(
+        f"/events/{event.slug}/characters/{second.id}/notes",
+        data={"note_text": "Trying to skip the scan"},
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert "Scan this badge first to open the character." in response.text
+
+    response = client.get(f"/q/{second.qr_token}", follow_redirects=True)
+    assert response.status_code == 200
+    assert "Deal Maker" in response.text
+    assert "Save note" in response.text
 
     response = client.post(
         f"/events/{event.slug}/characters/{second.id}/notes",

@@ -13,6 +13,7 @@ class CharacterProgressState:
     completed_count: int
     unlocked_position: int
     note_by_character_id: dict[int, CharacterNote]
+    discovered_character_ids: set[int]
     accessible_character_ids: set[int]
 
 
@@ -24,6 +25,7 @@ class LeaderboardEntry:
 
 
 def build_progress_state(characters: list[Character], notes: list[CharacterNote]) -> CharacterProgressState:
+    discovered_character_ids = {note.character_id for note in notes}
     note_by_character_id = {note.character_id: note for note in notes if note.note_text.strip()}
     completed_count = 0
     for character in characters:
@@ -44,6 +46,7 @@ def build_progress_state(characters: list[Character], notes: list[CharacterNote]
         completed_count=completed_count,
         unlocked_position=unlocked_position,
         note_by_character_id=note_by_character_id,
+        discovered_character_ids=discovered_character_ids,
         accessible_character_ids=accessible_character_ids,
     )
 
@@ -54,6 +57,17 @@ def can_access_character(user: Optional[User], character: Character, progress_st
     if user is None:
         return False
     return character.id in progress_state.accessible_character_ids
+
+
+def can_reveal_character(user: Optional[User], character: Character, progress_state: CharacterProgressState) -> bool:
+    if is_admin(user):
+        return True
+    if user is None:
+        return False
+    return (
+        character.id in progress_state.accessible_character_ids
+        and character.id in progress_state.discovered_character_ids
+    )
 
 
 def leaderboard_for_event(event: Event) -> list[LeaderboardEntry]:
@@ -90,4 +104,3 @@ def user_in_event(user: Optional[User], event: Event) -> bool:
     if is_admin(user):
         return True
     return any(membership.user_id == user.id for membership in event.memberships)
-
